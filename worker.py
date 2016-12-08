@@ -11,12 +11,12 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection
 from alchemyapi import AlchemyAPI
 
 # User credentials to access Twitter API
-access_token = '781950288466935808-qJzrIDv0gv9giCmMZATqxII52juoHIW'
-access_token_secret = 'gX35Ak4P8JB4s5xqEuMZNwOwO5L8bAbZhaXHHPnWQMaI0'
-consumer_key = 'gbsa3hkFg4nEn5FvKHxRAmRZq'
-consumer_secret = 'mygRjbiLGd40Q1HGbfObSpUCAZEGZVdDmpD8mPLJBAs4Kq6qAR'
+access_token = 'XXXXXXXXXXXXXXXXXXXXXXXXX'
+access_token_secret = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+consumer_key = 'XXXXXXXXXXXXXXXXXXXXXXXX'
+consumer_secret = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 
-awsauth = AWS4Auth('AKIAIEVN4MYCQV4ZQMCA', 'p1m6O3j/D82GdjOdHUmQETfqFTNCXSiDRgcJ3SzW','us-west-2', 'es')
+awsauth = AWS4Auth('XXXXXXXXXXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXXXXXXXXX','us-west-2', 'es')
 #host = 'search-tweetmap-wvcfiy2v2joahl22p4eljwnnre.us-west-2.es.amazonaws.com'
 #es = Elasticsearch(hosts=[{'host': host, 'port': 443}],
 #    http_auth=awsauth,
@@ -53,13 +53,13 @@ try:
 			client = boto3.client('sns')
 			res = client.create_topic(Name = 'newtweet')
 			topicArn = res['TopicArn'];
-			response = client.subscribe(TopicArn= topicArn,Protocol='HTTP',Endpoint= 'http://wow-dev-test.us-west-2.elasticbeanstalk.com/process')
+			response = client.subscribe(TopicArn= topicArn,Protocol='HTTP',Endpoint= 'http://XXXXXXXXXXXXXXXXXXXXXXX/process')
 			response = client.publish(TopicArn=topicArn,Message=str(jsonArray))
 			clientone = boto3.client('sns')
 			res = client.create_topic(Name = 'res')
 			print("beforrrrrrrrrrrrrrrrrrrrrrr#############################")
 			topicArn = res['TopicArn'];
-			response = client.subscribe(TopicArn= topicArn,Protocol='HTTP',Endpoint= 'http://wow-dev-test.us-west-2.elasticbeanstalk.com/responsive')
+			response = client.subscribe(TopicArn= topicArn,Protocol='HTTP',Endpoint= 'http://XXXXXXXXXXXXXXXXXXXXXXX/responsive')
 			response = client.publish(TopicArn=topicArn,Message=str(jsonArray))
 			print("DONE")
 			
