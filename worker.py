@@ -17,24 +17,18 @@ consumer_key = 'XXXXXXXXXXXXXXXXXXXXXXXX'
 consumer_secret = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 
 awsauth = AWS4Auth('XXXXXXXXXXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXXXXXXXXX','us-west-2', 'es')
-#host = 'search-tweetmap-wvcfiy2v2joahl22p4eljwnnre.us-west-2.es.amazonaws.com'
-#es = Elasticsearch(hosts=[{'host': host, 'port': 443}],
-#    http_auth=awsauth,
-#    use_ssl=True,
-#    verify_certs=True,
-#    connection_class=RequestsHttpConnection)
-
+# to perform sentiment analysis on the tweets collected
 alchemyapi = AlchemyAPI()
+# Get the queue
 sqs = boto3.resource('sqs')
 dic = collections.OrderedDict()
 
-# Get the queue
+
 try:
 	queue = sqs.get_queue_by_name(QueueName='testqq')
 	# process messages
 	while True:
 		for msg in queue.receive_messages(WaitTimeSeconds = 10):
-			print(msg.body);
 			parsed_input = json.loads(msg.body)
 			id = parsed_input['id']
 			text = parsed_input['text']
@@ -50,6 +44,7 @@ try:
 			dic['coordinates'] = coordinates
 			dic['sentiment'] = sentiment
 			jsonArray = json.dumps(dic)
+			# creating a sns topic to send notification
 			client = boto3.client('sns')
 			res = client.create_topic(Name = 'newtweet')
 			topicArn = res['TopicArn'];
