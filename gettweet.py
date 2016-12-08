@@ -52,6 +52,7 @@ class TwitterListener(StreamListener):
 			pass
 
 		
+		
 	def disconnect(self):
 		self.__stream.disconnect()
 
