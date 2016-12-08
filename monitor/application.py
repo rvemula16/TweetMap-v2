@@ -14,8 +14,8 @@ application.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(application, async_mode=async_mode)
 thread = None
 
-awsauth = AWS4Auth('AKIAIEVN4MYCQV4ZQMCA', 'p1m6O3j/D82GdjOdHUmQETfqFTNCXSiDRgcJ3SzW','us-west-2', 'es')
-host = 'search-tweetmap-wvcfiy2v2joahl22p4eljwnnre.us-west-2.es.amazonaws.com'
+awsauth = AWS4Auth('XXXXXXXXXXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXXXXXXXXX','us-west-2', 'es')
+host = 'XXXXXXXXXXXXXXXXXXXXXXX.com'
 
 # Connecting to elasticsearch
 es = Elasticsearch(hosts=[{'host': host, 'port': 443}],
@@ -35,24 +35,21 @@ def background_thread():
                       {'data': 'Server generated event', 'count': count},
                       namespace='/test')
 
-def findWholeWord(w):
-    return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
-
+# Called to process the notification/messages received from SNS 
 @application.route('/process', methods=['GET','POST'])
 def processinput():
-	#print("+++++++++++++++++++++++++++++++++++++++")
 	if request.method == 'POST':
-		print("!@!@!@!@!@!@!@!@!@!@!@!@!")
+		# check the message type 
 		resp = request.headers.get('X-Amz-Sns-Message-Type')
 		topic = request.headers.get('X-Amz-Sns-Topic-Arn')
 		useragent = request.headers.get('User-Agent')
 		json_data = json.loads(request.data.decode('utf-8'))
+		# if SubscriptionConfirmation then send confirm response back to SNS
 		if  resp =="SubscriptionConfirmation":
-			client = boto3.client('sns',aws_access_key_id= 'AKIAIEVN4MYCQV4ZQMCA',
-                        aws_secret_access_key = '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',
+			client = boto3.client('sns',aws_access_key_id= 'XXXXXXXXXXXXXXXXXXXXXXX',
+                        aws_secret_access_key = 'XXXXXXXXXXXXXXXXXXXXXXX',
                         region_name = 'us-west-2')
 			token = json_data['Token']
-			print("in confirmation:::::::::::::::::")
 			response = client.confirm_subscription(
     		TopicArn=topic,
     		Token=token
@@ -60,14 +57,12 @@ def processinput():
 			)
 			print(response)
 			return "Subscription confirmed!"
+		# if Notification then receive the message from SNS and put it into AWS Elasticsearch
 		elif resp == "Notification":
-			#json_data = json.loads(request.data.decode('utf-8'))
 			message = json_data['Message']
-			client = boto3.client('sns',aws_access_key_id= 'AKIAIEVN4MYCQV4ZQMCA',
-                        aws_secret_access_key = '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',
+			client = boto3.client('sns',aws_access_key_id= 'XXXXXXXXXXXXXXXXXXXXXXX',
+                        aws_secret_access_key = 'XXXXXXXXXXXXXXXXXXXXXXX',
                         region_name = 'us-west-2')
-			print("```````````````````````````````````````````````````````````````````")
-			print(message)
 			msg_data = json.loads(message)
 			msgid = str(msg_data['id'])
 			es.index(index="tweetmap", doc_type='data', id=msgid, body=message) 
@@ -79,7 +74,7 @@ def processinput():
 		return "In get"
 
 		
-
+# main app to show the map
 @application.route('/', methods=['GET','POST'])
 def getinput():
 	coord = []
@@ -87,93 +82,61 @@ def getinput():
 	sentiment = []
 	dic = collections.OrderedDict()
 	childdic = collections.OrderedDict()
-	#print ("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 	if request.method == 'POST':
-		#try:
-		print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^%%%%%%%%%%%%%%%%%%%%%%%%%%^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-		print(request.headers)
+		# get selected keyword
 		result = request.form['option']
 		if result is not None:
-			print (result)
-			#session["keyword"] = result
 			bodyOfRequest=""
 			firstPart = '{ "query":{"query_string":{"query":'
 			lastPart = ' }}}'
 			bodyOfRequest = firstPart+'"'+result+'"'+ lastPart
-			print("-----------------")
-			print(bodyOfRequest)
+			# search for the keyword in elastic search
 			res = es.search(index='tweetmap', body=bodyOfRequest )
-			#jsonArray = json.dumps(dic)
-			#jsonArray = json.dumps({})
 			for hit in res['hits']['hits']:
-				#childdic['coordinate'] = hit["_source"]["coordinates"]["coordinates"]
-				#childdic['text'] = hit["_source"]["text"]
-				#childdic['sentiment'] = hit["_source"]["sentiment"]
-				#dic[1] = childdic
 				coord.append (hit["_source"]["coordinates"]["coordinates"])
 				text.append(hit["_source"]["text"])
 				sentiment.append(hit["_source"]["sentiment"])
-				#jsonArray = jsonArray.append(json.dumps(childdic))
 				print("%(coordinates)s: %(text)s: %(sentiment)s" % hit["_source"])
-			print("**********************************************************")
-			print (coord)
-			print(text)
-			print(sentiment)
 			return render_template("index.html", data = coord, info = text, senti = sentiment, keyword = result)
 		else:
 			print ("error reading ")
 			return "ERROR"
-		#except httplib.IncompleteRead as e:
-			#result = "null"
 	else:
-		tv_show = "The Office"
 		return render_template("index.html")
 
-
+# used to receive notification from SNS on indexing any new tweet 
 @application.route('/responsive', methods=['GET','POST'])
 def responsive():
-	#print("+++++++++++++++++++++++++++++++++++++++")
 	if request.method == 'POST':
-		print("!@!@!@!@!@!@!@!@!@!@!@!@!")
-		print(request.headers)
 		resp = request.headers.get('X-Amz-Sns-Message-Type')
 		topic = request.headers.get('X-Amz-Sns-Topic-Arn')
 		useragent = request.headers.get('User-Agent')
 		json_data = json.loads(request.data.decode('utf-8'))
 		if  resp =="SubscriptionConfirmation":
-			client = boto3.client('sns',aws_access_key_id= 'AKIAIEVN4MYCQV4ZQMCA',
-                        aws_secret_access_key = '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',
+			client = boto3.client('sns',aws_access_key_id= 'XXXXXXXXXXXXXXXXXXXXXXX',
+                        aws_secret_access_key = 'XXXXXXXXXXXXXXXXXXXXXXX',
                         region_name = 'us-west-2')
 			token = json_data['Token']
-			print("in confirmation //////////////////////////////////////////////")
 			response = client.confirm_subscription(
     		TopicArn=topic,
     		Token=token
  			#AuthenticateOnUnsubscribe='string'
 			)
-			print(response)
 			return render_template("index.html",data = "Sucbscription Confirmed!!")
 		elif resp == "Notification":
-			#json_data = json.loads(request.data.decode('utf-8'))
 			message = json_data['Message']
-			client = boto3.client('sns',aws_access_key_id= 'AKIAIEVN4MYCQV4ZQMCA',
-                        aws_secret_access_key = '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',
+			client = boto3.client('sns',aws_access_key_id= 'XXXXXXXXXXXXXXXXXXXXXXX',
+                        aws_secret_access_key = 'XXXXXXXXXXXXXXXXXXXXXXX',
                         region_name = 'us-west-2')
-			print(message)
-			#@socketio.on('my_event', namespace='')
-			#if session["keyword"] != null:
-			#	search_word = session["keyword"]
-			#if search_word in message:
+			# send message through socket for real time processing
 			socketio.emit('my_response',{'data': message})
-			print("notification received")
-			print("CCCCCCCCCCCCCCCCCCCA@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 			return render_template("index.html",data = "Notification received")
 		else:
 			return render_template("index.html",data = "Not subscription or notification")
 	else:
 		return render_template('index.html', async_mode=socketio.async_mode)
 
-		
+# socket connection
 @socketio.on('connect', namespace='')
 def test_connect():
     global thread
