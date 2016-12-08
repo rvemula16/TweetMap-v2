@@ -23,13 +23,13 @@ from flask import Flask, render_template, request
 _log = logging.getLogger(__name__)
 
 # User credentials to access Twitter API
-access_token = '781950288466935808-qJzrIDv0gv9giCmMZATqxII52juoHIW'
-access_token_secret = 'gX35Ak4P8JB4s5xqEuMZNwOwO5L8bAbZhaXHHPnWQMaI0'
-consumer_key = 'gbsa3hkFg4nEn5FvKHxRAmRZq'
-consumer_secret = 'mygRjbiLGd40Q1HGbfObSpUCAZEGZVdDmpD8mPLJBAs4Kq6qAR'
+access_token = 'XXXXXXXXXXXXXXXXXXXXXXX'
+access_token_secret = 'XXXXXXXXXXXXXXXXXXXXXXX'
+consumer_key = 'XXXXXXXXXXXXXXXXXXXXXXX'
+consumer_secret = 'XXXXXXXXXXXXXXXXXXXXXXX'
 
 # User credentials to access aws services
-awsauth = AWS4Auth('AKIAIEVN4MYCQV4ZQMCA', 'p1m6O3j/D82GdjOdHUmQETfqFTNCXSiDRgcJ3SzW','us-west-2', 'es')
+awsauth = AWS4Auth('XXXXXXXXXXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXXXXXXXXX','us-west-2', 'es')
 #host = 'search-hw2sample-3hs235mux6h4u7qnorhgx2odli.us-west-2.es.amazonaws.com'
 lock = threading.Lock()
 
