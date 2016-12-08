@@ -30,15 +30,7 @@ consumer_secret = 'XXXXXXXXXXXXXXXXXXXXXXX'
 
 # User credentials to access aws services
 awsauth = AWS4Auth('XXXXXXXXXXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXXXXXXXXXX','us-west-2', 'es')
-#host = 'search-hw2sample-3hs235mux6h4u7qnorhgx2odli.us-west-2.es.amazonaws.com'
 lock = threading.Lock()
-
-# Connecting to elasticsearch
-#es = Elasticsearch(hosts=[{'host': host, 'port': 443}],
-#    http_auth=awsauth,
-#    use_ssl=True,
-#    verify_certs=True,
-#    connection_class=RequestsHttpConnection)
 
 # Create the queue. This returns an SQS.Queue instance
 sqs = boto3.resource('sqs')
@@ -46,6 +38,7 @@ sqs = boto3.resource('sqs')
 # You can now access identifiers and attributes
 queue = sqs.create_queue(QueueName='testqq')
 
+# class for live streaming of tweets
 class TwitterListener(StreamListener):
 
 	
@@ -70,24 +63,17 @@ class TwitterListener(StreamListener):
 			# Checking if geolocation is present and also if it is in english
 			if data['coordinates'] and data['text'] and data['lang']=="en":
 				with lock:
+					# writing data into a file
 					with open("output.json", "a") as f:
-						f.write("here")
 						f.write(str(data))
-						print(data)
 						dic['id'] = data['id']
 						dic['text'] = data['text']
 						dic['coordinates'] = data['coordinates']
 						jsonArray = json.dumps(dic)
-						# Create a new message
+						# Create a new message and send to be stored in AWS SQS
 						response = queue.send_message(MessageBody=jsonArray)
-						#es.index(index="test", doc_type='tweet', id=data['id'], body=jsonArray) 
-						print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-						print(data['coordinates']['coordinates'], data['text'])
-						#print(response.get('MessageId'))
-						#print(response.get('MD5OfMessageBody'))
 						print("data written")
-						with open("output.json", "a") as f:
-							f.write(str(jsonArray))
+						
 						
 			return True
 		except BaseException as e:
@@ -111,6 +97,6 @@ class TwitterListener(StreamListener):
 if __name__ == '__main__':
 	logging.basicConfig(level=logging.INFO)
 	
-
+# keywords to be searched 
 phrases = ['trump', 'debate', 'obama', 'clinton', 'technology', 'NBA', 'movie', 'crime', 'cricket','Modi','Demonetization','India','Rupees','Brazil','Deals','Soccer','Christmas','Thanksgiving']
 listener = TwitterListener(phrases)
